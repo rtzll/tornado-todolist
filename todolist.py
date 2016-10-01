@@ -1,18 +1,40 @@
-import tornado.ioloop
+import os
+
 import tornado.web
+import tornado.ioloop
+import tornado.options
+import tornado.httpserver
+
+from tornado.options import define, options
+define('port', default=8000, help='run on the given port', type=int)
 
 
-class MainHandler(tornado.web.RequestHandler):
+class Application(tornado.web.Application):
+    def __init__(self):
+        handlers = [
+            (r'/', MainHandler),
+        ]
+        settings = {
+            'debug': True,
+            'cookie_secret': os.environ.get('SECRET_KEY') or 'testing key',
+        }
+        super().__init__(handlers, **settings)
+
+
+class BaseHandler(tornado.web.RequestHandler):
+    pass
+
+
+class MainHandler(BaseHandler):
     def get(self):
-        self.write('ready for some todolists')
+        self.write('ready for some to-do lists')
 
 
-def make_app():
-    return tornado.web.Application([
-        (r'/', MainHandler),
-    ])
+def main():
+    tornado.options.parse_command_line()
+    http_server = tornado.httpserver.HTTPServer(Application())
+    http_server.listen(options.port)
+    tornado.ioloop.IOLoop.current().start()
 
 if __name__ == '__main__':
-    app = make_app()
-    app.listen(8888)
-    tornado.ioloop.IOLoop.current().start()
+    main()
