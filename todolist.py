@@ -8,21 +8,31 @@ import tornado.httpserver
 from tornado.options import define, options
 define('port', default=8000, help='run on the given port', type=int)
 
+BASEDIR = os.path.dirname(__file__)
+
 
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r'/', MainHandler),
+            (r'/login', LoginHandler),
         ]
         settings = {
+            'static_path':  os.path.join(BASEDIR, 'static'),
+            'template_path': os.path.join(BASEDIR, 'templates'),
             'debug': True,
             'cookie_secret': os.environ.get('SECRET_KEY') or 'testing key',
         }
-        super().__init__(handlers, **settings)
+        super().__init__(handlers=handlers, **settings)
 
 
 class BaseHandler(tornado.web.RequestHandler):
     pass
+
+
+class LoginHandler(BaseHandler):
+    def get(self):
+        self.render('login.html')
 
 
 class MainHandler(BaseHandler):
