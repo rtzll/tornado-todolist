@@ -1,5 +1,8 @@
 import os
+import concurrent.futures
 
+import motor
+import bcrypt
 import tornado.web
 import tornado.ioloop
 import tornado.options
@@ -9,6 +12,9 @@ from tornado.options import define, options
 define('port', default=8000, help='run on the given port', type=int)
 
 BASEDIR = os.path.dirname(__file__)
+
+# A thread pool to be used for password hashing with bcrypt.
+bcrypt_executor = concurrent.futures.ThreadPoolExecutor(2)
 
 
 class Application(tornado.web.Application):
@@ -28,9 +34,13 @@ class Application(tornado.web.Application):
         }
         super().__init__(handlers=handlers, **settings)
 
+        self.db = motor.motor_tornado.MotorClient()
+
 
 class BaseHandler(tornado.web.RequestHandler):
-    pass
+    @property
+    def db(self):
+        return self.application.db
 
 
 class RegisterHandler(BaseHandler):
@@ -42,14 +52,26 @@ class LoginHandler(BaseHandler):
     def get(self):
         self.render('login.html')
 
-    def post(self):
-        username = tornado.escape.xhtml_escape(self.get_argument("username"))
-        password = tornado.escape.xhtml_escape(self.get_argument("password"))
-        # TODO replace when DB/User model is done
-        if "demo" == username and "demo" == password:
-            self.set_secure_cookie("user", self.get_argument("username"))
+    async def post(self):
+        email_or_username = tornado.escape.xhtml_escape(
+            self.get_argument('email_or_username'))
+        user = await self.db.users.find_one({'$or': [
+            {'email': email_or_username},
+            {'username': email_or_username},
+        ]})
+        if user and await self.check_password(user):
+            self.set_secure_cookie('user', self.get_argument('username'))
             self.redirect(self.get_argument('next', self.reverse_url('main')))
+        # TODO indicate failure
         self.render('login.html')
+
+    async def check_password(self, user):
+        hashed_password = await bcrypt_executor.submit(
+            bcrypt.hashpw,
+            tornado.escape.utf8(self.get_argument('password')),
+            bcrypt.gensalt()
+        )
+        return user.password_hash == hashed_password
 
 
 class LogoutHandler(BaseHandler):
