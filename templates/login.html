@@ -9,13 +9,13 @@
       <form method=post>
         {% module xsrf_form_html() %}
         <dl>
-          <dd><input class="u-full-width" placeholder="Email or Username" maxlength=128>
-          <dd><input class="u-full-width" placeholder="Password" type="password">
+          <dd><input class="u-full-width" name="email_or_username" placeholder="Email or Username" type="text" maxlength=128>
+          <dd><input class="u-full-width" name="password" placeholder="Password" type="password">
           <dd><input class="u-full-width" value="Log In" type="submit">
         </dl>
       </form>
-      <p>New user? <a href="{{ reverse_url('auth.register') }}">Click here to register</a>.</p>
+      <p>New user? <a href="{{ reverse_url('register') }}">Click here to register</a>.</p>
     </div>
   </div>
 </section>
-{% endblock %}
+{% end %}
