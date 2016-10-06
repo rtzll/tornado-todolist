@@ -6,21 +6,18 @@
   <div class="row">
     <div class="three columns value-prop"></div>
     <div class="six columns">
-      {% if form.errors %}
-        <div class="has-error"><strong>Your registration contains errors.</strong></div>
-      {% endif %}
       <form method=post>
         {% module xsrf_form_html() %}
         <dl>
-          <dd>{{ form.username(class_="u-full-width", placeholder="Username", maxlength=64) }}
-          <dd>{{ form.email(class_="u-full-width", placeholder="Email", maxlength=64) }}
-          <dd>{{ form.password(class_="u-full-width", placeholder="Password") }}
-          <dd>{{ form.password_confirmation(class_="u-full-width", placeholder="Confirm your Password") }}
-          <dt>{{ form.submit }}
+          <dd><input class="u-full-width" name="username" placeholder="Username" type="text" maxlength=64>
+          <dd><input class="u-full-width" name="email" placeholder="Email" type="email" maxlength=64>
+          <dd><input class="u-full-width" name="password" placeholder="Password" type="password">
+          <dd><input class="u-full-width" name="password_confirmation" placeholder="Confirm your Password" type="password">
+          <dd><input class="u-full-width" value="Register" type="submit">
         </dl>
       </form>
-      <p>Already registerd? <a href="{{ reverse_url('auth.login') }}">Click here to login</a>.</p>
+      <p>Already registerd? <a href="{{ reverse_url('login') }}">Click here to login</a>.</p>
     </div>
   </div>
 </section>
-{% endblock %}
+{% end %}
