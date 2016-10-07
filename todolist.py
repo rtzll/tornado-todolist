@@ -1,12 +1,16 @@
 import os
+import asyncio
 import concurrent.futures
 
 import motor
 import bcrypt
+
 import tornado.web
+import tornado.log
 import tornado.ioloop
 import tornado.options
 import tornado.httpserver
+import tornado.platform
 
 from tornado.options import define, options
 define('port', default=8000, help='run on the given port', type=int)
@@ -15,6 +19,11 @@ BASEDIR = os.path.dirname(__file__)
 
 # A thread pool to be used for password hashing with bcrypt.
 bcrypt_executor = concurrent.futures.ThreadPoolExecutor(2)
+
+
+async def hash_password(pw):
+    return await tornado.platform.asyncio.to_asyncio_future(
+        bcrypt_executor.submit(bcrypt.hashpw, pw, bcrypt.gensalt()))
 
 
 class Application(tornado.web.Application):
@@ -44,8 +53,26 @@ class BaseHandler(tornado.web.RequestHandler):
 
 
 class RegisterHandler(BaseHandler):
-    # TODO
-    pass
+    def get(self):
+        self.render('register.html')
+
+    async def post(self):
+        username = tornado.escape.xhtml_escape(self.get_argument('username'))
+        email = tornado.escape.xhtml_escape(self.get_argument('email'))
+        password = tornado.escape.utf8(self.get_argument('password'))
+        password_confirmation = tornado.escape.utf8(
+            self.get_argument('password_confirmation'))
+        # TODO add proper password check
+        assert password == password_confirmation
+
+        hashed_password = await hash_password(password)
+        # TODO add proper check for input (username, email)
+        await self.db.users.insert_one({
+            'username': username,
+            'email': email,
+            'password_hash': hashed_password,
+        })
+        self.redirect(self.reverse_url('main'))
 
 
 class LoginHandler(BaseHandler):
@@ -66,11 +93,8 @@ class LoginHandler(BaseHandler):
         self.render('login.html')
 
     async def check_password(self, user):
-        hashed_password = await bcrypt_executor.submit(
-            bcrypt.hashpw,
-            tornado.escape.utf8(self.get_argument('password')),
-            bcrypt.gensalt()
-        )
+        hashed_password = await hash_password(tornado.escape.utf8(
+            self.get_argument('password')))
         return user.password_hash == hashed_password
 
 
@@ -86,10 +110,12 @@ class MainHandler(BaseHandler):
 
 
 def main():
+    tornado.platform.asyncio.AsyncIOMainLoop().install()
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
-    tornado.ioloop.IOLoop.current().start()
+    asyncio.get_event_loop().run_forever()
+
 
 if __name__ == '__main__':
     main()
