@@ -1,29 +1,32 @@
-import os
 import asyncio
 import concurrent.futures
+import os
 
-import motor
 import bcrypt
-
-import tornado.web
-import tornado.log
-import tornado.ioloop
-import tornado.options
+import motor
 import tornado.httpserver
-import tornado.platform
-
+import tornado.options
+import tornado.platform.asyncio
+import tornado.web
 from tornado.options import define, options
-define('port', default=8000, help='run on the given port', type=int)
 
 BASEDIR = os.path.dirname(__file__)
+
+# define command line arguments
+define('port', default=8000, help='run on the given port', type=int)
 
 # A thread pool to be used for password hashing with bcrypt.
 bcrypt_executor = concurrent.futures.ThreadPoolExecutor(2)
 
 
-async def hash_password(pw):
+async def add_job_to_pool(fn, *args):
     return await tornado.platform.asyncio.to_asyncio_future(
-        bcrypt_executor.submit(bcrypt.hashpw, pw, bcrypt.gensalt()))
+        bcrypt_executor.submit(fn, *args))
+
+
+async def hash_password(password, salt=None):
+    salt = bcrypt.gensalt() if salt is None else salt
+    return await add_job_to_pool(bcrypt.hashpw, password, salt)
 
 
 class Application(tornado.web.Application):
@@ -43,7 +46,7 @@ class Application(tornado.web.Application):
         }
         super().__init__(handlers=handlers, **settings)
 
-        self.db = motor.motor_tornado.MotorClient()
+        self.db = motor.motor_tornado.MotorClient().todolist
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -87,15 +90,17 @@ class LoginHandler(BaseHandler):
             {'username': email_or_username},
         ]})
         if user and await self.check_password(user):
-            self.set_secure_cookie('user', self.get_argument('username'))
+            self.set_secure_cookie('user', user['username'])
             self.redirect(self.get_argument('next', self.reverse_url('main')))
-        # TODO indicate failure
-        self.render('login.html')
+        else:
+            # TODO indicate failure
+            self.redirect(self.reverse_url('login'))
 
     async def check_password(self, user):
-        hashed_password = await hash_password(tornado.escape.utf8(
-            self.get_argument('password')))
-        return user.password_hash == hashed_password
+        hashed_password = await hash_password(
+            tornado.escape.utf8(self.get_argument('password')),
+            user['password_hash'])
+        return user['password_hash'] == hashed_password
 
 
 class LogoutHandler(BaseHandler):
