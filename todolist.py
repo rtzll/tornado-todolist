@@ -54,6 +54,9 @@ class BaseHandler(tornado.web.RequestHandler):
     def db(self):
         return self.application.db
 
+    def get_current_user(self):
+        return self.get_secure_cookie('user')
+
 
 class RegisterHandler(BaseHandler):
     def get(self):
