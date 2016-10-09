@@ -40,11 +40,13 @@
       <div class="container">
         <ul class="navbar-list">
           <li class="navbar-item"><a class="navbar-link" href="{{ reverse_url('main') }}">Todolist</a></li>
-          {% if not current_user or not current_user.is_authenticated %}
-          <li class="navbar-item">
-            <a class="navbar-link" href="{{ reverse_url('login') }}">Login</a> {% else %}
+          {% if not current_user %}
             <li class="navbar-item">
-              <a class="navbar-link" href="#" data-popover="#moreNavPopover">{{ current_user.username }}</a>
+              <a class="navbar-link" href="{{ reverse_url('login') }}">Login</a>
+            </li>
+          {% else %}
+            <li class="navbar-item">
+              <a class="navbar-link" href="#" data-popover="#moreNavPopover">{{ current_user }}</a>
               <div id="moreNavPopover" class="popover">
                 <ul class="popover-list">
                   <li class="popover-item">
