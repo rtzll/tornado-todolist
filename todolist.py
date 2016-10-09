@@ -33,6 +33,9 @@ class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             tornado.web.url(r'/', MainHandler, name='main'),
+            tornado.web.url(r'/todolist/', TodolistHandler, name='todolist'),
+            tornado.web.url(r'/overview',
+                            TodolistOverviewHandler, name='todolist_overview'),
             tornado.web.url(r'/register', RegisterHandler, name='register'),
             tornado.web.url(r'/login', LoginHandler, name='login'),
             tornado.web.url(r'/logout', LogoutHandler, name='logout'),
@@ -56,6 +59,14 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def get_current_user(self):
         return self.get_secure_cookie('user')
+
+
+class TodolistHandler(BaseHandler):
+    pass
+
+
+class TodolistOverviewHandler(BaseHandler):
+    pass
 
 
 class RegisterHandler(BaseHandler):
