@@ -1,6 +1,7 @@
 import asyncio
 import concurrent.futures
 import os
+from datetime import datetime
 
 import bcrypt
 import motor
@@ -33,9 +34,10 @@ class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             tornado.web.url(r'/', MainHandler, name='main'),
-            tornado.web.url(r'/todolist/', TodolistHandler, name='todolist'),
+            tornado.web.url(r'/todolist/\d+',
+                            TodolistHandler, name='todolist'),
             tornado.web.url(r'/overview',
-                            TodolistOverviewHandler, name='todolist_overview'),
+                            TodolistOverviewHandler, name='overview'),
             tornado.web.url(r'/register', RegisterHandler, name='register'),
             tornado.web.url(r'/login', LoginHandler, name='login'),
             tornado.web.url(r'/logout', LogoutHandler, name='logout'),
@@ -62,7 +64,25 @@ class BaseHandler(tornado.web.RequestHandler):
 
 
 class TodolistHandler(BaseHandler):
-    pass
+    async def get(self, todolist_id):
+        todolist = await self.db.todolists.find_one({
+            'todolist_id': todolist_id
+        })
+        self.render('todolist.html', todolist=todolist)
+
+    async def post(self, todolist_id):
+        description = tornado.escape.xhtml_escape(
+            self.get_argument('description'))
+        # TODO validate input
+        await self.db.todos.insert_one({
+            'description': description,
+            'created_at': datetime.utcnow(),
+            'finished_at': None,
+            'is_finsished': False,
+            'todolist_id': todolist_id,
+            'creator': self.get_current_user(),
+        })
+        self.redirect(self.reverse_url('todolist', todolist_id))
 
 
 class TodolistOverviewHandler(BaseHandler):
