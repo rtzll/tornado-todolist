@@ -145,7 +145,7 @@ class LogoutHandler(BaseHandler):
 
 class MainHandler(BaseHandler):
     def get(self):
-        self.write('ready for some to-do lists')
+        self.render('index.html')
 
 
 def main():
