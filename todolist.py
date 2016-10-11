@@ -74,6 +74,7 @@ class TodolistHandler(BaseHandler):
         description = tornado.escape.xhtml_escape(
             self.get_argument('description'))
         # TODO validate input
+        # TODO add to lists of todos of the todolist with the given id
         await self.db.todos.insert_one({
             'description': description,
             'created_at': datetime.utcnow(),
@@ -86,7 +87,22 @@ class TodolistHandler(BaseHandler):
 
 
 class TodolistOverviewHandler(BaseHandler):
-    pass
+    async def get(self):
+        todolists = await self.db.todolist.find({
+            'creator': self.get_current_user()
+        })
+        self.render('overview.html', todolists=todolists)
+
+    async def post(self):
+        title = tornado.escape.xhtml_escape(self.get_argument('title'))
+        await self.db.todolists.insert_one({
+            'title': title,
+            'creator': self.get_current_user(),
+            'created_at': datetime.utcnow(),
+            'todos': []
+        })
+        self.redirect(self.reverse_url('overview'))
+
 
 
 class RegisterHandler(BaseHandler):
