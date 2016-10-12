@@ -87,22 +87,23 @@ class TodolistHandler(BaseHandler):
 
 
 class TodolistOverviewHandler(BaseHandler):
+    @tornado.web.authenticated
     async def get(self):
         todolists = await self.db.todolist.find({
             'creator': self.get_current_user()
         })
         self.render('overview.html', todolists=todolists)
 
+    @tornado.web.authenticated
     async def post(self):
         title = tornado.escape.xhtml_escape(self.get_argument('title'))
         await self.db.todolists.insert_one({
             'title': title,
             'creator': self.get_current_user(),
             'created_at': datetime.utcnow(),
-            'todos': []
+            'todos': [],
         })
         self.redirect(self.reverse_url('overview'))
-
 
 
 class RegisterHandler(BaseHandler):
