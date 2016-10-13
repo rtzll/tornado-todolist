@@ -33,14 +33,22 @@ async def hash_password(password, salt=None):
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
+            # handlers for UI
+            # todolist related
             tornado.web.url(r'/', MainHandler, name='main'),
             tornado.web.url(r'/todolist/\d+',
                             TodolistHandler, name='todolist'),
             tornado.web.url(r'/overview',
                             TodolistOverviewHandler, name='overview'),
+            # user related
             tornado.web.url(r'/register', RegisterHandler, name='register'),
             tornado.web.url(r'/login', LoginHandler, name='login'),
             tornado.web.url(r'/logout', LogoutHandler, name='logout'),
+            # handlers for API
+            tornado.web.url(r'/api/users/', UsersApiHandler, name='users_api'),
+            tornado.web.url(r'/api/users/\s+', UserApiHandler, name='user_api'),
+
+
         ]
         settings = {
             'static_path':  os.path.join(BASEDIR, 'static'),
@@ -163,6 +171,14 @@ class LogoutHandler(BaseHandler):
 class MainHandler(BaseHandler):
     def get(self):
         self.render('index.html')
+
+
+class UserApiHandler(BaseHandler):
+    pass
+
+
+class UsersApiHandler(BaseHandler):
+    pass
 
 
 def main():
