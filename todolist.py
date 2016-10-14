@@ -47,8 +47,6 @@ class Application(tornado.web.Application):
             # handlers for API
             tornado.web.url(r'/api/users/', UsersApiHandler, name='users_api'),
             tornado.web.url(r'/api/users/\s+', UserApiHandler, name='user_api'),
-
-
         ]
         settings = {
             'static_path':  os.path.join(BASEDIR, 'static'),
@@ -178,7 +176,10 @@ class UserApiHandler(BaseHandler):
 
 
 class UsersApiHandler(BaseHandler):
-    pass
+    async def get(self):
+        fields = {'_id': False, 'password_hash': False}
+        users = await self.db.users.find(fields=fields).to_list(length=None)
+        self.finish({'users': users})
 
 
 def main():
