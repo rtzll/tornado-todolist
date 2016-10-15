@@ -172,7 +172,13 @@ class MainHandler(BaseHandler):
 
 
 class UserApiHandler(BaseHandler):
-    pass
+    async def get(self, username):
+        fields = {'_id': False, 'password_hash': False}
+        user = await self.db.users.find_one(
+            {'username': username},
+            fields=fields
+        )
+        self.finish(user)
 
 
 class UsersApiHandler(BaseHandler):
