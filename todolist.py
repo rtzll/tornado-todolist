@@ -26,7 +26,7 @@ async def add_job_to_pool(fn, *args):
 
 
 async def hash_password(password, salt=None):
-    salt = bcrypt.gensalt() if salt is None else salt
+    salt = salt or bcrypt.gensalt()
     return await add_job_to_pool(bcrypt.hashpw, password, salt)
 
 
