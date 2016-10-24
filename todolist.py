@@ -45,11 +45,13 @@ class Application(tornado.web.Application):
             tornado.web.url(r'/login', LoginHandler, name='login'),
             tornado.web.url(r'/logout', LogoutHandler, name='logout'),
             # handlers for API
-            tornado.web.url(r'/api/users/', UsersApiHandler, name='users_api'),
-            tornado.web.url(r'/api/users/(\w+)', UserApiHandler, name='user_api'),
+            tornado.web.url(r'/api/users/',
+                            UsersApiHandler, name='users_api'),
+            tornado.web.url(r'/api/users/(\w+)',
+                            UserApiHandler, name='user_api'),
         ]
         settings = {
-            'static_path':  os.path.join(BASEDIR, 'static'),
+            'static_path': os.path.join(BASEDIR, 'static'),
             'template_path': os.path.join(BASEDIR, 'templates'),
             'debug': True,
             'cookie_secret': os.environ.get('SECRET_KEY') or 'testing key',
