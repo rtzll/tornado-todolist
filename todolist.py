@@ -40,6 +40,7 @@ class Application(tornado.web.Application):
                             TodolistHandler, name='todolist'),
             tornado.web.url(r'/overview',
                             TodolistOverviewHandler, name='overview'),
+            tornado.web.url(r'/new_todo', NewTodoHandler, name='new_todo'),
             # user related
             tornado.web.url(r'/register', RegisterHandler, name='register'),
             tornado.web.url(r'/login', LoginHandler, name='login'),
@@ -69,6 +70,20 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def get_current_user(self):
         return self.get_secure_cookie('user')
+
+
+class NewTodoHandler(BaseHandler):
+    async def post(self):
+        description = tornado.escape.xhtml_escape(
+            self.get_argument('description'))
+        todolist = await self.db.todolists.insert_one({
+            'title': 'untitled',
+            'creator': self.get_current_user(),
+            'created_at': datetime.utcnow(),
+            'todos': [],  # TODO add todo
+        })
+        # TODO validate input (see TodolistHandler#post)
+        self.redirect(self.reverse_url('todolist', todolist.get('_id')))
 
 
 class TodolistHandler(BaseHandler):
