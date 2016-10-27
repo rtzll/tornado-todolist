@@ -1,9 +1,8 @@
 {% extends "base.html" %}
 
 {% block js %}
-<script src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment.min.js"></script>
 <script src="{{ static_url('js/todolist.js') }}"></script>
-{% endblock %}
+{% end %}
 
 {% block body %}
 <section class="header">
@@ -11,14 +10,11 @@
   <div class="row">
     <div class="three columns value-prop"></div>
     <div class="six columns">
-      {% if form.errors %}
-        <div class="has-error"><strong>Todos should neither be empty nor be longer than 128 characters.</strong></div>
-      {% endif %}
       <form method=post>
         {% module xsrf_form_html() %}
         <dl>
-          <dd>{{ form.todo(class_="u-full-width", placeholder="Enter your todo", value="", maxlength=128) }}
-          <dt>{{ form.submit }}
+          <dd><input class="u-full-width" name="description" placeholder="Enter your todo" type="text" maxlength=128>
+          <dd><input class="u-full-width" value="Submit" type="submit">
         </dl>
       </form>
     </div>
@@ -29,8 +25,8 @@
           {% for todo in todolist.todos %}
             {% if not todo.is_finished %}
               <li><input type="checkbox" id="checkbox" data-todo-id="{{ todo.id }}"> {{ todo.description }}</li>
-            {% endif %}
-          {% endfor %}
+            {% end %}
+          {% end %}
         </ul>
       </div>
       <div class="one-half column finished-todos">
@@ -39,11 +35,11 @@
           {% for todo in todolist.todos %}
             {% if todo.is_finished %}
               <li><input type="checkbox" id="checkbox" data-todo-id="{{ todo.id }}" checked="checked"> {{ todo.description }}</li>
-            {% endif %}
-          {% endfor %}
+            {% end %}
+          {% end %}
         </ul>
       </div>
     </div>
   </div>
 </section>
-{% endblock %}
+{% end %}
