@@ -193,18 +193,19 @@ class MainHandler(BaseHandler):
 
 class UserApiHandler(BaseHandler):
     async def get(self, username):
-        fields = {'_id': False, 'password_hash': False}
+        projection = {'_id': False, 'password_hash': False}
         user = await self.db.users.find_one(
             {'username': username},
-            fields=fields
+            projection=projection
         )
         self.finish(user)
 
 
 class UsersApiHandler(BaseHandler):
     async def get(self):
-        fields = {'_id': False, 'password_hash': False}
-        users = await self.db.users.find(fields=fields).to_list(length=None)
+        projection = {'_id': False, 'password_hash': False}
+        users = await self.db.users.find(
+            projection=projection).to_list(length=None)
         self.finish({'users': users})
 
 
