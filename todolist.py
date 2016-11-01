@@ -51,6 +51,9 @@ class Application(tornado.web.Application):
                             UsersApiHandler, name='users_api'),
             tornado.web.url(r'/api/user/(\w+)',
                             UserApiHandler, name='user_api'),
+            # TODO add api endpoints for:
+            # * user's todolists
+            # * (all) todolists, todolist by id (which inlcudes the todos?!)
         ]
         settings = {
             'static_path': os.path.join(BASEDIR, 'static'),
