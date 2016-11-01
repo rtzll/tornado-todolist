@@ -46,7 +46,7 @@ class Application(tornado.web.Application):
             tornado.web.url(r'/login/?', LoginHandler, name='login'),
             tornado.web.url(r'/logout/?', LogoutHandler, name='logout'),
             # handlers for API
-            tornado.web.url(r'/api/users/',
+            tornado.web.url(r'/api/?', ApiHandler, name='api'),
             tornado.web.url(r'/api/users/?',
                             UsersApiHandler, name='users_api'),
             tornado.web.url(r'/api/users/(\w+)',
@@ -191,6 +191,13 @@ class MainHandler(BaseHandler):
     def get(self):
         self.render('index.html')
 
+
+class ApiHandler(BaseHandler):
+    def get(self):
+        self.finish({
+            'users': self.reverse_url('users_api'),  # TODO user full url
+            'todolists': ''  # TODO add once todolist api handler exists
+        })
 
 class UserApiHandler(BaseHandler):
     async def get(self, username):
