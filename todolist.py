@@ -49,7 +49,7 @@ class Application(tornado.web.Application):
             tornado.web.url(r'/api/?', ApiHandler, name='api'),
             tornado.web.url(r'/api/users/?',
                             UsersApiHandler, name='users_api'),
-            tornado.web.url(r'/api/users/(\w+)',
+            tornado.web.url(r'/api/user/(\w+)',
                             UserApiHandler, name='user_api'),
         ]
         settings = {
