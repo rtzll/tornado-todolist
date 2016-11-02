@@ -51,8 +51,10 @@ class Application(tornado.web.Application):
                             UsersApiHandler, name='users_api'),
             tornado.web.url(r'/api/user/(\w+)',
                             UserApiHandler, name='user_api'),
+            tornado.web.url(r'/api/user/(\w+)/todolists/?',
+                            UserTodolistsApiHandler,
+                            name='user_todolists_api'),
             # TODO add api endpoints for:
-            # * user's todolists
             # * (all) todolists, todolist by id (which inlcudes the todos?!)
         ]
         settings = {
@@ -218,6 +220,16 @@ class UsersApiHandler(BaseHandler):
         users = await self.db.users.find(
             projection=projection).to_list(length=None)
         self.finish({'users': users})
+
+
+class UserTodolistsApiHandler(BaseHandler):
+    async def get(self, username):
+        projection = {'_id': False, 'password_hash': False}
+        todolists = await self.db.todolists.find_one(
+            {'creator': username},
+            projection=projection
+        )
+        self.finish({'todolists': todolists})
 
 
 def main():
