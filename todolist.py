@@ -204,6 +204,15 @@ class ApiHandler(BaseHandler):
             'todolists': ''  # TODO add once todolist api handler exists
         })
 
+    def write_error(self, status_code):
+        error_messages = {
+            404: 'Not found',  # TODO add other error codes
+        }
+        self.finish({
+            'status_code': status_code,
+            'error_message': error_message.get(status_code, 'Unknown error')
+        })
+
 class UserApiHandler(BaseHandler):
     async def get(self, username):
         projection = {'_id': False, 'password_hash': False}
@@ -211,6 +220,8 @@ class UserApiHandler(BaseHandler):
             {'username': username},
             projection=projection
         )
+        if not user:
+            self.send_error(404)
         self.finish(user)
 
 
@@ -224,11 +235,9 @@ class UsersApiHandler(BaseHandler):
 
 class UserTodolistsApiHandler(BaseHandler):
     async def get(self, username):
-        projection = {'_id': False, 'password_hash': False}
-        todolists = await self.db.todolists.find_one(
-            {'creator': username},
-            projection=projection
-        )
+        if not await self.db.users.find_one({'username': username}):
+            self.send_error(404)
+        todolists = await self.db.todolists.find_one({'creator': username})
         self.finish({'todolists': todolists})
 
 
