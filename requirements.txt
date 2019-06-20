@@ -1,3 +1,0 @@
-tornado==5.0.2
-motor==1.2.1
-bcrypt==3.1.4
